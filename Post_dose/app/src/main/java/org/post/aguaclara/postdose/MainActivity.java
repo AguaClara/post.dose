@@ -177,7 +177,7 @@ public class MainActivity extends Activity
         // name of the sub-fields, then these values
         // overwrite the current values of those sub-fields.
         Intent intent = new Intent();
-        intent.putExtra("coagDoseSuggestion", response);
+        intent.putExtra("value", response);
         setResult(RESULT_OK, intent);
         finish();
     }
