@@ -5,8 +5,10 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -67,7 +69,8 @@ public class MainActivity extends Activity
     Intent incomingIntent;
     float rawWaterTurbidity;
     public Model model;
-    private static final String filename = "myModelfile";
+    UpdateModelReceiver myReceiver = null;
+    Boolean myReceiverIsRegistered = false;
     //TODO: crashes if no acount on phone and you go to add one.
     /**
      * Create the main activity.
@@ -153,16 +156,43 @@ public class MainActivity extends Activity
         if (intent.getAction().equals(str)) {
             getResultsFromApi();
         }
+        myReceiver = new UpdateModelReceiver();
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
 //        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!myReceiverIsRegistered) {
+            registerReceiver(myReceiver, new IntentFilter("org.odk.collect.android.activities.COLLECT"));
+            myReceiverIsRegistered = false;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (myReceiverIsRegistered) {
+            unregisterReceiver(myReceiver);
+            myReceiverIsRegistered = false;
+        }
+    }
+
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        //handle your intent here.Note this will be called even when activity first created.so becareful to handle intents correctly.
+        System.out.println("An Intent!" + intent);
+    }
+
     private void saveModel(Model m){
         FileOutputStream outputStream;
         try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream = openFileOutput(Model.filename, Context.MODE_PRIVATE);
             m.save(outputStream);
         } catch (Exception e) {
             System.err.println("No Model File Found in saveModel?");
@@ -174,7 +204,7 @@ public class MainActivity extends Activity
         FileInputStream inputStream;
         Model m = new Model();
         try {
-            inputStream = openFileInput(filename);
+            inputStream = openFileInput(Model.filename);
             m.load(inputStream);
         } catch (Exception e) {
             System.out.println("No Model File Found loading in main");
@@ -182,6 +212,7 @@ public class MainActivity extends Activity
         }
         return m;
     }
+
     private void sendAnswerBackToApp(float response) {
         //If the returned bundle of values contains
         // values whose keys match the type and the
@@ -391,6 +422,17 @@ public class MainActivity extends Activity
                 connectionStatusCode,
                 REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
+    }
+
+    public class UpdateModelReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent){
+            Intent outIntent = new Intent();
+            outIntent.setAction("org.odk.collect.android.activities.COLLECT");
+            //TODO: restructure to make this less awful
+            startActivity(intent);
+            getResultsFromApi();
+        }
     }
 
     /**

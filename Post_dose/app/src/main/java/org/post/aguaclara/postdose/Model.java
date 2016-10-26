@@ -4,6 +4,8 @@ package org.post.aguaclara.postdose;
  * Created by asm278 on 10/6/16.
  */
 
+import android.content.Context;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,8 +16,10 @@ import java.io.InputStreamReader;
 
 
 public class Model{
+    //TODO make work for more regressions
     private float m;
     private float b;
+    static final String filename = "myModelfile";
 
 
     public Model(){
@@ -75,7 +79,7 @@ public class Model{
     }
 
 
-
+    //TODO: Make private
     public void load(FileInputStream inputStream){
         //LOADS THIS MODEL
         String old_model = "";
@@ -99,6 +103,7 @@ public class Model{
     }
 
     //outputstream needs to be opened.
+    //TODO: Make private
     public void save(FileOutputStream outputStream){
         //SAVES THIS MODEL as a JSON
         String str = this.toString();
@@ -111,6 +116,31 @@ public class Model{
             System.out.println("No Model File Found in save");
             e.printStackTrace();
         }
+    }
+
+
+
+    private void saveModel(Model m, Context context){
+        FileOutputStream outputStream;
+        try {
+            outputStream = context.openFileOutput(Model.filename, Context.MODE_PRIVATE);
+            m.save(outputStream);
+        } catch (Exception e) {
+            System.err.println("No Model File Found in saveModel?");
+            e.printStackTrace();
+        }
+    }
+    private Model loadModel(Context context){
+        FileInputStream inputStream;
+        Model m = new Model();
+        try {
+            inputStream = context.openFileInput(Model.filename);
+            m.load(inputStream);
+        } catch (Exception e) {
+            System.out.println("No Model File Found loading in main");
+            e.printStackTrace();
+        }
+        return m;
     }
 
 }
