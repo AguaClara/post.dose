@@ -148,6 +148,11 @@
           <text id="/data/plantData/flowUnits:option1">
             <value>Gallons per minute (Gal/min)</value>
           </text>
+          <!-- change -->
+          <text id="/data/plantData/coagDoseSuggestion:label">
+            <value>Suggested Coagulant Dose (mg/L)</value>
+          </text>
+          <!-- change -->
           <text id="/data/plantData/coagulantDose:label">
             <value>Coagulant Dose (mg/L)</value>
           </text>
@@ -390,6 +395,11 @@
           <text id="/data/plantData/flowUnits:option1">
             <value>Galones por minuto (Gal/min)</value>
           </text>
+          <!-- change -->
+          <text id="/data/plantData/coagDoseSuggestion:label">
+            <value>Dosis de coagulantes sugerida (mg/L)</value>
+          </text>
+          <!-- change -->
           <text id="/data/plantData/coagulantDose:label">
             <value>Dosis de coagulantes (mg/L)</value>
           </text>
@@ -717,7 +727,7 @@
     <group ref="/data/consented" appearance="field-list" 
             >
       <input ref="/data/consented/coagDoseSuggestion" appearance="ex:org.post.aguaclara.postdose.COLLECT(rawWaterTurbidity=/data/plantData/rawWaterTurbidity)"> <!-- Need to pass the raw water turbidity for now -->
-        <label>A filler text</label> <!-- Make this spanishable -->
+        <label ref="jr:itext('/data/plantData/coagDoseSuggestion:label')"/>
       </input>
       <input ref="/data/plantData/coagulantDose">
         <label ref="jr:itext('/data/plantData/coagulantDose:label')"/>

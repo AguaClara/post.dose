@@ -23,6 +23,10 @@
                 <action android:name="org.post.aguaclara.postdose.COLLECT"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="org.odk.collect.android.activities.COLLECT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
         </activity>
         <meta-data
             android:name="com.google.android.gms.version"

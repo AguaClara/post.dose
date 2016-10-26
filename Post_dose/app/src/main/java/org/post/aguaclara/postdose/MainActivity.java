@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -67,7 +68,7 @@ public class MainActivity extends Activity
     float rawWaterTurbidity;
     public Model model;
     private static final String filename = "myModelfile";
-
+    //TODO: crashes if no acount on phone and you go to add one.
     /**
      * Create the main activity.
      * @param savedInstanceState previously saved instance data.
@@ -75,6 +76,7 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        System.out.println("alive!");
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -122,7 +124,13 @@ public class MainActivity extends Activity
         model = new Model(); // this should be persistant!!
         // Get the intent that started this activity
         Intent intent = getIntent();
-        if (intent.getAction() == "org.post.aguaclara.postdose.COLLECT") {
+        System.out.println(intent);
+        String str = "org.odk.collect.android.activities.COLLECT";
+        if (!intent.getAction().equals("")) {
+            System.out.println(intent.getAction());
+            System.out.println("wanting: " + str);
+        }
+        if (intent.getAction().equals("org.post.aguaclara.postdose.COLLECT"))  {
             getResultsFromApi();
             incomingIntent = intent;
             //establish model
@@ -141,6 +149,9 @@ public class MainActivity extends Activity
             }
 
             sendAnswerBackToApp(model.makeSuggestion(rawWaterTurbidity));
+        }
+        if (intent.getAction().equals(str)) {
+            getResultsFromApi();
         }
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -442,6 +453,7 @@ public class MainActivity extends Activity
                 }
                 model.setFromJSON(j.toString());
                 saveModel(model);
+                System.out.println("Model successfully updated");
             }
             return results;
         }
