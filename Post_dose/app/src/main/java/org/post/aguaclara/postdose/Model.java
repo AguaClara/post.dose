@@ -15,33 +15,49 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 
 
-public class Model{
-    //TODO make work for more regressions
-    private float m;
-    private float b;
-    static final String filename = "myModelfile";
+public abstract class Model{
+    public static final float eps = 0.0001f;
+    float p1;
+    float p2;
+    float rSquared;
 
 
     public Model(){
-        m = 0.0f;
-        b = 0.0f;
+        p1 = 0.0f;
+        p2 = 0.0f;
+        rSquared = 0.0f;
+    }
+    public Model(float a, float b,float rSq){
+        p1 = a;
+        p2 = b;
+        rSquared = rSq;
     }
 
-    public float makeSuggestion(float rawWaterTurbidity){
-        return m * rawWaterTurbidity + b;
-    }
+    abstract float makeSuggestion(float rawWaterTurbidity);
 
-    public void setFromJSON(String j){
+
+
+    public void setFromJSON(String json){
         try {
-            JSONObject res = new JSONObject(j);
+            JSONObject res = new JSONObject(json);
             try {
-                String strm = res.getString("m");
-                m = Float.valueOf(strm);
-            } catch (JSONException e){}
+                String str = res.getString("p1");
+                p1 = Float.valueOf(str);
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
             try {
-                String strb = res.getString("b");
-                b = Float.valueOf(strb);
-            } catch (JSONException e){}
+                String str = res.getString("p2");
+                p2 = Float.valueOf(str);
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
+            try {
+                String strRsq = res.getString("rsq");
+                rSquared = Float.valueOf(strRsq);
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
 
         } catch (JSONException e) {
             System.err.println("BAD JSON RECVD!");
@@ -49,28 +65,13 @@ public class Model{
         }
     }
 
-    public void setM(float m){
-        this.m = m;
-    }
-
-    public float getM() {
-        return m;
-    }
-
-    public void setB(float b){
-        this.b = b;
-    }
-
-    public float getB() {
-        return b;
-    }
-
     @Override
     public String toString(){
         JSONObject j = new JSONObject();
         try {
-            j.put("m",m);
-            j.put("b",b);
+            j.put("p1",p1);
+            j.put("p2",p2);
+            j.put("rsq",rSquared);
         } catch (JSONException e) {
             System.out.println("JSON-ifying the model failed");
             e.printStackTrace();
@@ -78,69 +79,36 @@ public class Model{
         return j.toString();
     }
 
-
-    //TODO: Make private
-    public void load(FileInputStream inputStream){
-        //LOADS THIS MODEL
-        String old_model = "";
+    public JSONObject toJSON(){
+        JSONObject j = new JSONObject();
         try {
-
-            InputStreamReader isr = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-            old_model = sb.toString();
-        } catch (Exception e) {
-            System.out.println("No Model File Found?");
+            j.put("p1",p1);
+            j.put("p2",p2);
+            j.put("rsq",rSquared);
+        } catch (JSONException e) {
+            System.out.println("JSON-ifying the model failed");
             e.printStackTrace();
         }
-
-        setFromJSON(old_model);
-
+        return j;
     }
 
-    //outputstream needs to be opened.
-    //TODO: Make private
-    public void save(FileOutputStream outputStream){
-        //SAVES THIS MODEL as a JSON
-        String str = this.toString();
-        //https://developer.android.com/training/basics/data-storage/files.html
-
-        try {
-            outputStream.write(str.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            System.out.println("No Model File Found in save");
-            e.printStackTrace();
+    //this means that models can be equal if they have same params but different model, i.e
+    // a log model can be equal to a linear model.
+    // TODO: fix this to prevent cross-class equality
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-    }
-
-
-
-    private void saveModel(Model m, Context context){
-        FileOutputStream outputStream;
-        try {
-            outputStream = context.openFileOutput(Model.filename, Context.MODE_PRIVATE);
-            m.save(outputStream);
-        } catch (Exception e) {
-            System.err.println("No Model File Found in saveModel?");
-            e.printStackTrace();
+        if (!Model.class.isAssignableFrom(obj.getClass())) {
+            return false;
         }
-    }
-    private Model loadModel(Context context){
-        FileInputStream inputStream;
-        Model m = new Model();
-        try {
-            inputStream = context.openFileInput(Model.filename);
-            m.load(inputStream);
-        } catch (Exception e) {
-            System.out.println("No Model File Found loading in main");
-            e.printStackTrace();
-        }
-        return m;
+        final Model that = (Model) obj;
+        if (Math.abs(that.rSquared-this.rSquared) < eps
+                && Math.abs(that.p1-this.p1) < eps
+                && Math.abs(that.p2-this.p2) < eps)
+            return true;
+        return false;
     }
 
 }

@@ -39,13 +39,10 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -68,9 +65,10 @@ public class MainActivity extends Activity
 
     Intent incomingIntent;
     float rawWaterTurbidity;
-    public Model model;
+    public ModelContainer modelContainer;
     UpdateModelReceiver myReceiver = null;
     Boolean myReceiverIsRegistered = false;
+
     //TODO: crashes if no acount on phone and you go to add one.
     /**
      * Create the main activity.
@@ -124,7 +122,7 @@ public class MainActivity extends Activity
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
-        model = new Model(); // this should be persistant!!
+        modelContainer = new ModelContainer(); // this should be persistant!!
         // Get the intent that started this activity
         Intent intent = getIntent();
         System.out.println(intent);
@@ -137,7 +135,7 @@ public class MainActivity extends Activity
             getResultsFromApi();
             incomingIntent = intent;
             //establish model
-            model = loadModel();
+            modelContainer.loadModel(getApplicationContext());
 
             Bundle b = incomingIntent.getExtras();
             //temporary proof of concept
@@ -151,7 +149,7 @@ public class MainActivity extends Activity
                 e.printStackTrace();
             }
 
-            sendAnswerBackToApp(model.makeSuggestion(rawWaterTurbidity));
+            sendAnswerBackToApp(modelContainer.getBestDosageRecommendation(rawWaterTurbidity));
         }
         if (intent.getAction().equals(str)) {
             getResultsFromApi();
@@ -181,38 +179,6 @@ public class MainActivity extends Activity
         }
     }
 
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        //handle your intent here.Note this will be called even when activity first created.so becareful to handle intents correctly.
-        System.out.println("An Intent!" + intent);
-    }
-
-    private void saveModel(Model m){
-        FileOutputStream outputStream;
-        try {
-            outputStream = openFileOutput(Model.filename, Context.MODE_PRIVATE);
-            m.save(outputStream);
-        } catch (Exception e) {
-            System.err.println("No Model File Found in saveModel?");
-            e.printStackTrace();
-        }
-    }
-
-    private Model loadModel(){
-        FileInputStream inputStream;
-        Model m = new Model();
-        try {
-            inputStream = openFileInput(Model.filename);
-            m.load(inputStream);
-        } catch (Exception e) {
-            System.out.println("No Model File Found loading in main");
-            e.printStackTrace();
-        }
-        return m;
-    }
-
     private void sendAnswerBackToApp(float response) {
         //If the returned bundle of values contains
         // values whose keys match the type and the
@@ -223,8 +189,6 @@ public class MainActivity extends Activity
         setResult(RESULT_OK, intent);
         finish();
     }
-
-
 
     /**
      * Attempt to call the API, after verifying that all the preconditions are
@@ -460,6 +424,7 @@ public class MainActivity extends Activity
         protected List<String> doInBackground(Void... params) {
             try {
                 return getDataFromApi();
+
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
@@ -473,17 +438,38 @@ public class MainActivity extends Activity
          * @return List of names and majors
          * @throws IOException
          */
-        private List<String> getDataFromApi() throws IOException {
-            String spreadsheetId = "1hu-lYtR6Nzkg8BdepIC35SQjIGBE7On0aFEvD4mGbOc";
-            String range = "linear!A1:B2";
+        private List<String> getDataFromApi(){
+
+            JSONObject j = new JSONObject();
+            try {
+                addModelToJSON("linear",j);
+                addModelToJSON("logarithmic",j);
+                addModelToJSON("power",j);
+                addModelToJSON("exponential",j);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            modelContainer.setFromJSON(j.toString());
+            modelContainer.saveModelCollection(getApplicationContext());
+            System.out.println("Model updated with " + j);
+            ArrayList<String> a = new ArrayList<String>();
+            a.add(modelContainer.toString());
+            return a;
+        }
+
+        private void addModelToJSON(String model, JSONObject outerJSON) throws IOException{
+            JSONObject j = new JSONObject();
+            String spreadsheetId = getString(R.string.regression_spreadsheet_id);
+            String range = model + "!A1:B3";
             List<String> results = new ArrayList<String>();
-            ValueRange response = this.mService.spreadsheets().values()
-                    .get(spreadsheetId, range)
-                    .execute();
+            ValueRange response = null;
+            response = this.mService.spreadsheets().values()
+                        .get(spreadsheetId, range)
+                        .execute();
             List<List<Object>> values = response.getValues();
             if (values != null) {
                 results.add("param, val");
-                JSONObject j = new JSONObject();
+
                 for (List row : values) {
                     results.add(row.get(0) + ", " + row.get(1));
                     try {
@@ -493,11 +479,13 @@ public class MainActivity extends Activity
                         e.printStackTrace();
                     }
                 }
-                model.setFromJSON(j.toString());
-                saveModel(model);
-                System.out.println("Model successfully updated");
             }
-            return results;
+            try {
+                outerJSON.put(model, j.toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+                System.out.println("Failed to write JSON");
+            }
         }
 
 
