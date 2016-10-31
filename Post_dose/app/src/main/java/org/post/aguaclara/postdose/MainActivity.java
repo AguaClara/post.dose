@@ -77,7 +77,6 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        System.out.println("alive!");
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -126,12 +125,12 @@ public class MainActivity extends Activity
         // Get the intent that started this activity
         Intent intent = getIntent();
         System.out.println(intent);
-        String str = "org.odk.collect.android.activities.COLLECT";
+        String str = getString(R.string.collect_intent);
         if (!intent.getAction().equals("")) {
             System.out.println(intent.getAction());
             System.out.println("wanting: " + str);
         }
-        if (intent.getAction().equals("org.post.aguaclara.postdose.COLLECT"))  {
+        if (intent.getAction().equals(getString(R.string.regression_intent)))  {
             getResultsFromApi();
             incomingIntent = intent;
             //establish model
@@ -165,7 +164,7 @@ public class MainActivity extends Activity
     protected void onResume() {
         super.onResume();
         if (!myReceiverIsRegistered) {
-            registerReceiver(myReceiver, new IntentFilter("org.odk.collect.android.activities.COLLECT"));
+            registerReceiver(myReceiver, new IntentFilter(getString(R.string.collect_intent)));
             myReceiverIsRegistered = false;
         }
     }
@@ -391,10 +390,6 @@ public class MainActivity extends Activity
     public class UpdateModelReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent){
-            Intent outIntent = new Intent();
-            outIntent.setAction("org.odk.collect.android.activities.COLLECT");
-            //TODO: restructure to make this less awful
-            startActivity(intent);
             getResultsFromApi();
         }
     }

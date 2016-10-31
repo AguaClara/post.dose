@@ -1,4 +1,7 @@
 <resources>
-    <string name="app_name">Post_dose</string>
+    <string name="app_name">POST dose</string>
     <string name="regression_spreadsheet_id">1NFuGrusRcQa6WCnM9-QiJvm_Bgg4DHyuxXPGdsapBCg</string>
+    <string name="collect_intent">org.aguaclara.post.collect.activities.COLLECT</string>
+    <string name="regression_intent">org.post.aguaclara.postdose.COLLECT</string>
+    <string name="button">Update saved model</string>
 </resources>

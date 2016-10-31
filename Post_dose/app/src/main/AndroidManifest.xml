@@ -9,11 +9,11 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Post Dose Use"
+        android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:label="Post Dose Dev">
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,7 +24,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="org.odk.collect.android.activities.COLLECT"/>
+                <action android:name="@string/collect_intent"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
 
