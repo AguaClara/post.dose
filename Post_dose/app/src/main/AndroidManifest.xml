@@ -24,7 +24,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="@string/collect_intent"/>
+                <action android:name="org.aguaclara.post.collect.activities.COLLECT"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
 
