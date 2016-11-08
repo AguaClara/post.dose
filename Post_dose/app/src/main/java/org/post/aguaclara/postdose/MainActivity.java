@@ -23,6 +23,12 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -46,6 +52,7 @@ import java.util.List;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
+
 
 public class MainActivity extends Activity
         implements EasyPermissions.PermissionCallbacks {
@@ -94,9 +101,10 @@ public class MainActivity extends Activity
         mCallApiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                System.out.println("button pressed");
                 mCallApiButton.setEnabled(false);
                 mOutputText.setText("");
-                getResultsFromApi();
+                mOutputText.setText(getModel());
                 mCallApiButton.setEnabled(true);
             }
         });
@@ -130,8 +138,9 @@ public class MainActivity extends Activity
             System.out.println(intent.getAction());
             System.out.println("wanting: " + str);
         }
-        if (intent.getAction().equals(getString(R.string.regression_intent)))  {
-            getResultsFromApi();
+        if (intent.getAction().equals(getString(R.string.do_regression_intent)))  {
+//            getResultsFromApi();
+            getModel();
             incomingIntent = intent;
             //establish model
             modelContainer.loadModel(getApplicationContext());
@@ -158,6 +167,40 @@ public class MainActivity extends Activity
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
 //        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    }
+
+    public String getModel(){
+        if (! isDeviceOnline()) {
+            return "No network connection available.";
+        }
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";
+//                    "https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec";
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        System.out.println("Response is: "+ response);
+                        modelContainer.setFromJSON(response);
+                        modelContainer.saveModelCollection(getApplicationContext());
+                        System.out.println("Model updated with " + response);
+                        mOutputText.setText(modelContainer.toString());
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.err.println("That didn't work!");
+            }
+        });
+// Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
+        return modelContainer.toString();
     }
 
     @Override
