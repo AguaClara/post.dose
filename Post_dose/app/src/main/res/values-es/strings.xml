@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="button">Actualiza el modelo guardado</string>
+    <string name="default_text">Clic en el botón \"Actualiza el modelo guardado\".</string>
 </resources>
