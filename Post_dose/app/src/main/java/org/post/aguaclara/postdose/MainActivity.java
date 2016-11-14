@@ -59,8 +59,8 @@ public class MainActivity extends Activity{
             public void onClick(View v) {
                 System.out.println("button pressed");
                 mCallApiButton.setEnabled(false);
-                mOutputText.setText("");
-                mOutputText.setText(getModel());
+                getModel();
+                mOutputText.setText("Waiting...");
                 mCallApiButton.setEnabled(true);
             }
         });
@@ -134,7 +134,7 @@ public class MainActivity extends Activity{
                         modelContainer.setFromJSON(response);
                         modelContainer.saveModelCollection(getApplicationContext());
                         System.out.println("Model updated with " + response);
-                        mOutputText.setText(modelContainer.toString());
+                        mOutputText.setText("Success. \n " + modelContainer.toString());
                     }
                 }, new Response.ErrorListener() {
             @Override
