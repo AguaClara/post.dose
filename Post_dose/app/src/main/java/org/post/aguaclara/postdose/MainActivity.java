@@ -31,7 +31,7 @@ public class MainActivity extends Activity{
 
     Intent incomingIntent;
     float rawWaterTurbidity;
-    public ModelContainer modelContainer;
+    public PlantModelContainer plantModels;
     UpdateModelReceiver myReceiver = null;
     Boolean myReceiverIsRegistered = false;
 
@@ -78,7 +78,7 @@ public class MainActivity extends Activity{
 
         setContentView(activityLayout);
 
-        modelContainer = new ModelContainer();
+        plantModels = new PlantModelContainer();
         // Get the intent that started this activity
         Intent intent = getIntent();
         System.out.println(intent);
@@ -91,7 +91,7 @@ public class MainActivity extends Activity{
             getModel();
             incomingIntent = intent;
             //establish model
-            modelContainer.loadModel(getApplicationContext());
+            plantModels.loadModel(getApplicationContext());
 
             Bundle b = incomingIntent.getExtras();
 
@@ -104,8 +104,8 @@ public class MainActivity extends Activity{
                 System.out.println("an exception was raised, worried? for " + s);
                 e.printStackTrace();
             }
-
-            sendAnswerBackToApp(modelContainer.getBestDosageRecommendation(rawWaterTurbidity));
+            //TODO: catch plantname from the app
+            sendAnswerBackToApp(plantModels.getBestDosageRecommendation(rawWaterTurbidity,"general"));
         }
         if (intent.getAction().equals(str)) {
             getModel();
@@ -137,10 +137,10 @@ public class MainActivity extends Activity{
                     @Override
                     public void onResponse(String response) {
                         System.out.println("Response is: "+ response);
-                        modelContainer.setFromJSON(response);
-                        modelContainer.saveModelCollection(getApplicationContext());
+                        plantModels.setFromJSON(response);
+                        plantModels.saveModelCollection(getApplicationContext());
                         System.out.println("Model updated with " + response);
-                        mOutputText.setText("Success. \n " + modelContainer.toString());
+                        mOutputText.setText("Success. \n " + plantModels.toString());
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -153,7 +153,7 @@ public class MainActivity extends Activity{
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
 
-        return modelContainer.toString();
+        return plantModels.toString();
     }
 
     //needed for the broadcast listener

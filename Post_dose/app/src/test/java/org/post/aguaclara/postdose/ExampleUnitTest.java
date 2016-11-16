@@ -74,4 +74,20 @@ public class ExampleUnitTest {
         assertFalse(m.equals(n));
     }
 
+    @Test
+    public void testPlantModelContainer(){
+        PlantModelContainer pmc = new PlantModelContainer();
+        String m_gt = "{\"general\":{\"exponential\":{\"p1\":10,\"rsq\":0.75,\"p2\":2},\"linear\":{\"p1\":10,\"rsq\":0.74,\"p2\":11},\"power\":{\"p1\":3,\"rsq\":0.1,\"p2\":4},\"logarithmic\":{\"p1\":1,\"rsq\":0.0001,\"p2\":3}}}";
+        pmc.setFromJSON(m_gt);
+        PlantModelContainer pmc2 = new PlantModelContainer(m_gt);
+        assertTrue(pmc.equals(pmc2));
+        assertTrue(pmc2.equals(pmc));
+        assertTrue(pmc2.equals(pmc2));
+        String m_gt_two = "{\"moroceli\":{\"exponential\":{\"p1\":100,\"rsq\":1.75,\"p2\":1},\"linear\":{\"p1\":1,\"rsq\":0.74,\"p2\":11},\"power\":{\"p1\":3,\"rsq\":0.1,\"p2\":4},\"logarithmic\":{\"p1\":1,\"rsq\":0.0001,\"p2\":3}}," +
+                "\"general\":{\"exponential\":{\"p1\":10,\"rsq\":0.75,\"p2\":2},\"linear\":{\"p1\":10,\"rsq\":0.74,\"p2\":11},\"power\":{\"p1\":3,\"rsq\":0.1,\"p2\":4},\"logarithmic\":{\"p1\":1,\"rsq\":0.0001,\"p2\":3}}}";
+        pmc2.setFromJSON(m_gt_two);
+        System.out.println(pmc);
+        System.out.println(pmc2);
+        assertFalse(pmc.equals(pmc2));
+    }
 }

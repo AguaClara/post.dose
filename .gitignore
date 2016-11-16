@@ -35,6 +35,7 @@ captures/
 # Intellij
 *.iml
 .idea/
+Post_dose.idea/
 
 # Keystore files
 *.jks

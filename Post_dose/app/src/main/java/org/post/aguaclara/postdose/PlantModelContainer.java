@@ -17,8 +17,7 @@ import java.util.Iterator;
  * Created by asm278 on 11/16/16.
  */
 
-public class PlantModelContainer {
-    static final String filename = "myModelfile";
+public class PlantModelContainer extends Persistent{
     private HashMap<String, ModelContainer> models;
 
     public PlantModelContainer(){
@@ -31,6 +30,7 @@ public class PlantModelContainer {
      * @param json
      */
     public PlantModelContainer(String json){
+        this();
         setFromJSON(json);
     }
 
@@ -41,7 +41,8 @@ public class PlantModelContainer {
             while( keys.hasNext() ) {
                 String key = (String) keys.next();
                 if (jObject.get(key) instanceof JSONObject) {
-                    System.out.println(key);
+//                    System.out.println(key);
+//                    System.out.println(jObject.get(key).toString());
                     models.put(key, new ModelContainer(jObject.get(key).toString()));
                 }
             }
@@ -61,6 +62,7 @@ public class PlantModelContainer {
         else
             return -1f;
     }
+
     @Override
     public String toString(){
         JSONObject j = new JSONObject();
@@ -77,61 +79,31 @@ public class PlantModelContainer {
         return j.toString();
     }
 
-    private void load(FileInputStream inputStream){
-        //LOADS THIS MODEL
-        String old_model = "";
-        try {
-
-            InputStreamReader isr = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-            old_model = sb.toString();
-        } catch (Exception e) {
-            System.out.println("No Model File Found?");
-            e.printStackTrace();
+    @Override
+    public boolean equals(Object obj){
+        if (obj == null) {
+            return false;
         }
-
-        setFromJSON(old_model);
-
-    }
-
-    //outputstream needs to be opened.
-    protected void save(FileOutputStream outputStream){
-        //saves this model collection as a JSON
-        String str = this.toString();
-        //https://developer.android.com/training/basics/data-storage/files.html
-        try {
-            outputStream.write(str.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            System.out.println("No Model File Found in save");
-            e.printStackTrace();
+        if (!PlantModelContainer.class.isAssignableFrom(obj.getClass())) {
+            return false;
         }
-    }
-
-
-    protected void saveModelCollection(Context context){
-        FileOutputStream outputStream;
-        try {
-            outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            this.save(outputStream);
-        } catch (Exception e) {
-            System.err.println("No Model File Found in saveModel?");
-            e.printStackTrace();
+        final PlantModelContainer that = (PlantModelContainer) obj;
+        Iterator<String> keys = models.keySet().iterator();
+        while (keys.hasNext()){
+            String key = keys.next();
+            if (!that.models.containsKey(key))
+                return false;
+            else if (!models.get(key).equals(that.models.get(key)))
+                return false;
         }
-    }
-    protected void loadModel(Context context){
-        FileInputStream inputStream;
-        try {
-            inputStream = context.openFileInput(filename);
-            this.load(inputStream);
-        } catch (Exception e) {
-            System.out.println("No Model File Found loading in main");
-            e.printStackTrace();
+        keys = that.models.keySet().iterator();
+        while (keys.hasNext()){
+            String key = keys.next();
+            if (!models.containsKey(key))
+                return false;
+            else if (!that.models.get(key).equals(models.get(key)))
+                return false;
         }
+        return true;
     }
 }

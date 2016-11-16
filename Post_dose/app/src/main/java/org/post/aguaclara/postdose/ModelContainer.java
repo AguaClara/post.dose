@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
  * Created by asm278 on 10/26/16.
  */
 
-public class ModelContainer {
+public class ModelContainer extends Persistent{
 
     private ExponentialModel exp;
     private PowerModel pow;
