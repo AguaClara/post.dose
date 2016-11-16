@@ -11,11 +11,11 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 
 /**
+ * This class contains Exponential, Lonear, Power, and Logarithmic Models
  * Created by asm278 on 10/26/16.
  */
 
 public class ModelContainer {
-    static final String filename = "myModelfile";
 
     private ExponentialModel exp;
     private PowerModel pow;
@@ -32,6 +32,20 @@ public class ModelContainer {
         setBestModel();
     }
 
+    /**
+     * This constructs the ModelContainer from a json string of:
+     * {linear:{p1:v1,...},exponential:{p1:v1,...},power:{p1:v1,...},logarithmic:{p1:v1,...},}
+     * @param json
+     */
+    public ModelContainer(String json){
+        exp = new ExponentialModel();
+        lin = new LinearModel();
+        pow = new PowerModel();
+        log = new LogarithmicModel();
+        setFromJSON(json);
+        setBestModel();
+    }
+
     public float getBestDosageRecommendation(float rawWaterTurb){
         return bestModel.makeSuggestion(rawWaterTurb);
     }
@@ -41,14 +55,14 @@ public class ModelContainer {
                                         pow.rSquared),
                                 Math.max(log.rSquared,
                                         lin.rSquared));
-        if (lin.rSquared >= bestRSq - 0.001)
-            bestModel = lin;
         if (log.rSquared >= bestRSq - 0.001)
             bestModel = log;
         if (pow.rSquared >= bestRSq - 0.001)
             bestModel = pow;
         if (exp.rSquared >= bestRSq - 0.001)
             bestModel = exp;
+        if (lin.rSquared >= bestRSq - 0.001)
+            bestModel = lin;
     }
 
     public void setFromJSON(String json){
@@ -88,6 +102,10 @@ public class ModelContainer {
 
     @Override
     public String toString(){
+        return this.toJSON();
+    }
+
+    public String toJSON(){
         JSONObject j = new JSONObject();
         try {
             j.put("exponential",exp.toJSON());
@@ -99,66 +117,6 @@ public class ModelContainer {
             e.printStackTrace();
         }
         return j.toString();
-    }
-
-
-
-    private void load(FileInputStream inputStream){
-        //LOADS THIS MODEL
-        String old_model = "";
-        try {
-
-            InputStreamReader isr = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-            old_model = sb.toString();
-        } catch (Exception e) {
-            System.out.println("No Model File Found?");
-            e.printStackTrace();
-        }
-
-        setFromJSON(old_model);
-
-    }
-
-    //outputstream needs to be opened.
-    protected void save(FileOutputStream outputStream){
-        //saves this model collection as a JSON
-        String str = this.toString();
-        //https://developer.android.com/training/basics/data-storage/files.html
-        try {
-            outputStream.write(str.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            System.out.println("No Model File Found in save");
-            e.printStackTrace();
-        }
-    }
-
-
-    protected void saveModelCollection(Context context){
-        FileOutputStream outputStream;
-        try {
-            outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            this.save(outputStream);
-        } catch (Exception e) {
-            System.err.println("No Model File Found in saveModel?");
-            e.printStackTrace();
-        }
-    }
-    protected void loadModel(Context context){
-        FileInputStream inputStream;
-        try {
-            inputStream = context.openFileInput(filename);
-            this.load(inputStream);
-        } catch (Exception e) {
-            System.out.println("No Model File Found loading in main");
-            e.printStackTrace();
-        }
     }
 
     @Override
