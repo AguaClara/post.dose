@@ -60,7 +60,7 @@ public class MainActivity extends Activity{
                 System.out.println("button pressed");
                 mCallApiButton.setEnabled(false);
                 getModel();
-                mOutputText.setText("Waiting...");
+                mOutputText.setText(getString(R.string.waiting_for_results));
                 mCallApiButton.setEnabled(true);
             }
         });
@@ -117,7 +117,7 @@ public class MainActivity extends Activity{
     public String getModel(){
         if (! isDeviceOnline()) {
             System.out.println("Device is offline");
-            return "No network connection available.";
+            return getString(R.string.no_network_connection);
         }
 
         // Instantiate the RequestQueue.
@@ -134,13 +134,13 @@ public class MainActivity extends Activity{
                         modelContainer.setFromJSON(response);
                         modelContainer.saveModelCollection(getApplicationContext());
                         System.out.println("Model updated with " + response);
-                        mOutputText.setText("Success. \n " + modelContainer.toString());
+                        mOutputText.setText(getString(R.string.success) + " \n " + modelContainer.toString());
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 System.err.println("That didn't work!");
-                mOutputText.setText("No network connection available.");
+                mOutputText.setText(getString(R.string.no_network_connection));
             }
         });
 
@@ -170,6 +170,10 @@ public class MainActivity extends Activity{
         }
     }
 
+    /**
+     * Send the response intent back to ODK
+     * @param response the coagulant dosage suggestion
+     */
     private void sendAnswerBackToApp(float response) {
         //If the returned bundle of values contains
         // values whose keys match the type and the
