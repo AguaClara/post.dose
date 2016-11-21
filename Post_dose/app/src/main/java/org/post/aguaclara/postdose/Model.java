@@ -4,15 +4,8 @@ package org.post.aguaclara.postdose;
  * Created by asm278 on 10/6/16.
  */
 
-import android.content.Context;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 
 
 public abstract class Model{
@@ -25,7 +18,7 @@ public abstract class Model{
     public Model(){
         p1 = 0.0f;
         p2 = 0.0f;
-        rSquared = 0.0f;
+        rSquared = -1f;
     }
     public Model(float a, float b,float rSq){
         p1 = a;
@@ -37,32 +30,20 @@ public abstract class Model{
 
 
 
-    public void setFromJSON(String json){
+    public void setFromJSON(String json) throws JSONException {
         try {
             JSONObject res = new JSONObject(json);
-            try {
-                String str = res.getString("p1");
-                p1 = Float.valueOf(str);
-            } catch (JSONException e){
-                e.printStackTrace();
-            }
-            try {
-                String str = res.getString("p2");
-                p2 = Float.valueOf(str);
-            } catch (JSONException e){
-                e.printStackTrace();
-            }
-            try {
-                String strRsq = res.getString("rsq");
-                rSquared = Float.valueOf(strRsq);
-            } catch (JSONException e){
-                e.printStackTrace();
-            }
-
-        } catch (JSONException e) {
-            System.err.println("BAD JSON RECVD!");
-            e.printStackTrace();
+            String str = res.getString("p1");
+            p1 = Float.valueOf(str);
+            str = res.getString("p2");
+            p2 = Float.valueOf(str);
+            str = res.getString("rsq");
+            rSquared = Float.valueOf(str);
+        } catch (NumberFormatException e){
+            //turns a Float(#NUM) error into a JSON error (really a JSON error too)
+            throw new JSONException(e.getMessage());
         }
+
     }
 
     @Override

@@ -28,8 +28,7 @@ public class MainActivity extends Activity{
     private Button mCallApiButton;
 
     Intent incomingIntent;
-    float rawWaterTurbidity;
-    public ModelContainer modelContainer;
+    public PlantModelContainer plantModels;
     UpdateModelReceiver myReceiver = null;
     Boolean myReceiverIsRegistered = false;
 
@@ -76,33 +75,25 @@ public class MainActivity extends Activity{
 
         setContentView(activityLayout);
 
-        modelContainer = new ModelContainer();
+        plantModels = new PlantModelContainer();
         // Get the intent that started this activity
         Intent intent = getIntent();
-        System.out.println(intent);
         String str = getString(R.string.from_collect_intent);
-        if (!intent.getAction().equals("")) {
-            System.out.println(intent.getAction());
-            System.out.println("wanting: " + str);
-        }
+
+        //requesting a coagulant dosage
         if (intent.getAction().equals(getString(R.string.eval_regression_intent)))  {
             getModel();
             incomingIntent = intent;
             //establish model
-            modelContainer.loadModel(getApplicationContext());
+            plantModels.loadModel(getApplicationContext());
 
             Bundle b = incomingIntent.getExtras();
 
-            String s = b.get("rawWaterTurbidity").toString();
-            rawWaterTurbidity = 0.0f;
-            try {
-                rawWaterTurbidity = Float.valueOf(s);
-            } catch (Exception e) {
-                System.out.println("an exception was raised, worried? for " + s);
-                e.printStackTrace();
-            }
+            String rawWaterTurbidity = b.get("rawWaterTurbidity").toString();
+            String plantName = b.get("plantName").toString();
 
-            sendAnswerBackToApp(modelContainer.getBestDosageRecommendation(rawWaterTurbidity));
+            float rec = getResult(rawWaterTurbidity, plantName, plantModels);
+            sendAnswerBackToApp(rec);
         }
         if (intent.getAction().equals(str)) {
             getModel();
@@ -114,6 +105,23 @@ public class MainActivity extends Activity{
 //        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    public static float getResult(String rawWaterTurbidity, String plantName, PlantModelContainer pmc){
+        System.out.println("Looking for a coag for " + rawWaterTurbidity + " at " + plantName);
+        System.out.println("in plantmodels:" + pmc);
+        plantName = plantName.replace(" ","");
+        float rawTurb = 0.0f;
+        try {
+            rawTurb = Float.valueOf(rawWaterTurbidity);
+        } catch (Exception e) {
+            System.out.println("an exception was raised, worried? for " + rawWaterTurbidity);
+            e.printStackTrace();
+        }
+        float rec = pmc.getBestDosageRecommendation(rawTurb,plantName);
+        if (rec < 0)
+            rec = pmc.getBestDosageRecommendation(rawTurb,"general");
+        return rec;
+    }
+
     public String getModel(){
         if (! isDeviceOnline()) {
             System.out.println("Device is offline");
@@ -122,19 +130,19 @@ public class MainActivity extends Activity{
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";//aguaclara account
-//"https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec";//development account (Andrew's)
+        String url = "https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";//aguaclara account
+                //"https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec";//development account (Andrew's)
+
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        System.out.println("Response is: "+ response);
-                        modelContainer.setFromJSON(response);
-                        modelContainer.saveModelCollection(getApplicationContext());
-                        System.out.println("Model updated with " + response);
-                        mOutputText.setText(getString(R.string.success) + " \n " + modelContainer.toString());
+                        plantModels.setFromJSON(response);
+                        plantModels.saveModelCollection(getApplicationContext());
+                        mOutputText.setText(plantModels.toString());
+                        System.out.println("Response: " + response);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -147,7 +155,7 @@ public class MainActivity extends Activity{
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
 
-        return modelContainer.toString();
+        return plantModels.toString();
     }
 
     //needed for the broadcast listener
