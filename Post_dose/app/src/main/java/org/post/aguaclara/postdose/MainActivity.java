@@ -108,6 +108,7 @@ public class MainActivity extends Activity{
     public static float getResult(String rawWaterTurbidity, String plantName, PlantModelContainer pmc){
         System.out.println("Looking for a coag for " + rawWaterTurbidity + " at " + plantName);
         System.out.println("in plantmodels:" + pmc);
+        plantName = plantName.replace(" ","");
         float rawTurb = 0.0f;
         try {
             rawTurb = Float.valueOf(rawWaterTurbidity);
@@ -129,8 +130,8 @@ public class MainActivity extends Activity{
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";//aguaclara account
-//                "https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec";//development account (Andrew's)
+        String url = //"https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";//aguaclara account
+                "https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec";//development account (Andrew's)
 
 
         // Request a string response from the provided URL.
@@ -141,6 +142,7 @@ public class MainActivity extends Activity{
                         plantModels.setFromJSON(response);
                         plantModels.saveModelCollection(getApplicationContext());
                         mOutputText.setText(plantModels.toString());
+                        System.out.println("Response: " + response);
                     }
                 }, new Response.ErrorListener() {
             @Override
