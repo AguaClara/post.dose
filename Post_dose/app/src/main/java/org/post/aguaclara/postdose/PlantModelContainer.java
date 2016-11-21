@@ -29,7 +29,7 @@ public class PlantModelContainer extends Persistent{
     }
 
     public void setFromJSON(String json){
-        json = json.replace("\\","").replace("\"","").replace(" ", "");
+        json = json.replace(" ", "");
         try {
             JSONObject jObject = new JSONObject(json);
             Iterator<?> keys = jObject.keys();

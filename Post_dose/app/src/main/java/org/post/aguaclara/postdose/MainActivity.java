@@ -59,7 +59,7 @@ public class MainActivity extends Activity{
                 System.out.println("button pressed");
                 mCallApiButton.setEnabled(false);
                 getModel();
-                mOutputText.setText("Waiting...");
+                mOutputText.setText(getString(R.string.waiting_for_results));
                 mCallApiButton.setEnabled(true);
             }
         });
@@ -125,13 +125,13 @@ public class MainActivity extends Activity{
     public String getModel(){
         if (! isDeviceOnline()) {
             System.out.println("Device is offline");
-            return "No network connection available.";
+            return getString(R.string.no_network_connection);
         }
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = //"https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";//aguaclara account
-                "https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec";//development account (Andrew's)
+        String url = "https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";//aguaclara account
+                //"https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec";//development account (Andrew's)
 
 
         // Request a string response from the provided URL.
@@ -147,8 +147,8 @@ public class MainActivity extends Activity{
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                System.err.println("That didn't work!\n" + error.toString());
-                mOutputText.setText("No network connection available.");
+                System.err.println("That didn't work!");
+                mOutputText.setText(getString(R.string.no_network_connection));
             }
         });
 
@@ -178,6 +178,10 @@ public class MainActivity extends Activity{
         }
     }
 
+    /**
+     * Send the response intent back to ODK
+     * @param response the coagulant dosage suggestion
+     */
     private void sendAnswerBackToApp(float response) {
         //If the returned bundle of values contains
         // values whose keys match the type and the
