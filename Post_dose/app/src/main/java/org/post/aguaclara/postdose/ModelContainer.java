@@ -1,14 +1,7 @@
 package org.post.aguaclara.postdose;
 
-import android.content.Context;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 
 /**
  * This class contains Exponential, Lonear, Power, and Logarithmic Models
@@ -46,8 +39,12 @@ public class ModelContainer extends Persistent{
         setBestModel();
     }
 
+    //result of -1 means that there was an error
     public float getBestDosageRecommendation(float rawWaterTurb){
-        return bestModel.makeSuggestion(rawWaterTurb);
+        if (bestModel != null)
+            return bestModel.makeSuggestion(rawWaterTurb);
+        else
+            return -1f;
     }
 
     private void setBestModel(){
@@ -63,6 +60,8 @@ public class ModelContainer extends Persistent{
             bestModel = exp;
         if (lin.rSquared >= bestRSq - 0.001)
             bestModel = lin;
+        if (bestRSq < 0)
+            bestModel = null;
     }
 
     public void setFromJSON(String json){
@@ -72,24 +71,28 @@ public class ModelContainer extends Persistent{
                 String str = res.getString("exponential");
                 exp.setFromJSON(str);
             } catch (JSONException e){
+                System.out.println("Model had no exponential component");
                 e.printStackTrace();
             }
             try {
                 String str = res.getString("linear");
                 lin.setFromJSON(str);
             } catch (JSONException e){
+                System.out.println("Model had no linear component");
                 e.printStackTrace();
             }
             try {
                 String str = res.getString("power");
                 pow.setFromJSON(str);
             } catch (JSONException e){
+                System.out.println("Model had no power component");
                 e.printStackTrace();
             }
             try {
                 String str = res.getString("logarithmic");
                 log.setFromJSON(str);
             } catch (JSONException e){
+                System.out.println("Model had no logarithmic component");
                 e.printStackTrace();
             }
 

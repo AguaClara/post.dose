@@ -1,9 +1,5 @@
 package org.post.aguaclara.postdose;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.post.aguaclara.postdose.Model;
-
 /**
  * Created by asm278 on 10/26/16.
  */

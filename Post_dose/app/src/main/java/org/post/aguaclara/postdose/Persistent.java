@@ -35,9 +35,7 @@ public abstract class Persistent {
             System.out.println("No Model File Found?");
             e.printStackTrace();
         }
-
         setFromJSON(old_model);
-
     }
 
     //outputstream needs to be opened.
@@ -46,6 +44,7 @@ public abstract class Persistent {
         String str = this.toString();
         //https://developer.android.com/training/basics/data-storage/files.html
         try {
+            str = str.replace("\\","").replace("\"","");
             outputStream.write(str.getBytes());
             outputStream.close();
         } catch (Exception e) {

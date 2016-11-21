@@ -22,15 +22,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import java.util.HashMap;
-
 
 public class MainActivity extends Activity{
     private TextView mOutputText;
     private Button mCallApiButton;
 
     Intent incomingIntent;
-    float rawWaterTurbidity;
     public PlantModelContainer plantModels;
     UpdateModelReceiver myReceiver = null;
     Boolean myReceiverIsRegistered = false;
@@ -81,12 +78,9 @@ public class MainActivity extends Activity{
         plantModels = new PlantModelContainer();
         // Get the intent that started this activity
         Intent intent = getIntent();
-        System.out.println(intent);
         String str = getString(R.string.from_collect_intent);
-        if (!intent.getAction().equals("")) {
-            System.out.println(intent.getAction());
-            System.out.println("wanting: " + str);
-        }
+
+        //requesting a coagulant dosage
         if (intent.getAction().equals(getString(R.string.eval_regression_intent)))  {
             getModel();
             incomingIntent = intent;
@@ -95,17 +89,11 @@ public class MainActivity extends Activity{
 
             Bundle b = incomingIntent.getExtras();
 
-            String s = b.get("rawWaterTurbidity").toString();
+            String rawWaterTurbidity = b.get("rawWaterTurbidity").toString();
             String plantName = b.get("plantName").toString();
-            rawWaterTurbidity = 0.0f;
-            try {
-                rawWaterTurbidity = Float.valueOf(s);
-            } catch (Exception e) {
-                System.out.println("an exception was raised, worried? for " + s);
-                e.printStackTrace();
-            }
-            //TODO: catch plantname from the app
-            sendAnswerBackToApp(plantModels.getBestDosageRecommendation(rawWaterTurbidity,"general"));
+
+            float rec = getResult(rawWaterTurbidity, plantName, plantModels);
+            sendAnswerBackToApp(rec);
         }
         if (intent.getAction().equals(str)) {
             getModel();
@@ -117,6 +105,22 @@ public class MainActivity extends Activity{
 //        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    public static float getResult(String rawWaterTurbidity, String plantName, PlantModelContainer pmc){
+        System.out.println("Looking for a coag for " + rawWaterTurbidity + " at " + plantName);
+        System.out.println("in plantmodels:" + pmc);
+        float rawTurb = 0.0f;
+        try {
+            rawTurb = Float.valueOf(rawWaterTurbidity);
+        } catch (Exception e) {
+            System.out.println("an exception was raised, worried? for " + rawWaterTurbidity);
+            e.printStackTrace();
+        }
+        float rec = pmc.getBestDosageRecommendation(rawTurb,plantName);
+        if (rec < 0)
+            rec = pmc.getBestDosageRecommendation(rawTurb,"general");
+        return rec;
+    }
+
     public String getModel(){
         if (! isDeviceOnline()) {
             System.out.println("Device is offline");
@@ -125,27 +129,23 @@ public class MainActivity extends Activity{
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url =//"https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";//aguaclara account
-                String.format("https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec?param1=%1$s",
-                        "Moroceli");//development account (Andrew's)
-        HashMap mParams = new HashMap<String, String>();
-        mParams.put("plantName", "Moroceli");
+        String url ="https://script.google.com/macros/s/AKfycbz4EsxZF_UQi5LmjU3NXY16V3wxB3mT_UMSuw2LsC4h2RXJxYg/exec";//aguaclara account
+//                "https://script.google.com/macros/s/AKfycbwu8nLp3h1TKrOo2rqPRB1--kvZx5AWrEKBOhAT793VeEeUroA5/exec";//development account (Andrew's)
+
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        System.out.println("Response is: "+ response);
                         plantModels.setFromJSON(response);
                         plantModels.saveModelCollection(getApplicationContext());
-                        System.out.println("Model updated with " + response);
-                        mOutputText.setText("Success. \n " + plantModels.toString());
+                        mOutputText.setText(plantModels.toString());
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                System.err.println("That didn't work!");
+                System.err.println("That didn't work!\n" + error.toString());
                 mOutputText.setText("No network connection available.");
             }
         });

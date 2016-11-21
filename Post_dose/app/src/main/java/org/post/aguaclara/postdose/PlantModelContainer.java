@@ -1,14 +1,8 @@
 package org.post.aguaclara.postdose;
 
-import android.content.Context;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -35,14 +29,13 @@ public class PlantModelContainer extends Persistent{
     }
 
     public void setFromJSON(String json){
+        json = json.replace("\\","").replace("\"","");
         try {
             JSONObject jObject = new JSONObject(json);
             Iterator<?> keys = jObject.keys();
             while( keys.hasNext() ) {
                 String key = (String) keys.next();
                 if (jObject.get(key) instanceof JSONObject) {
-//                    System.out.println(key);
-//                    System.out.println(jObject.get(key).toString());
                     models.put(key, new ModelContainer(jObject.get(key).toString()));
                 }
             }
