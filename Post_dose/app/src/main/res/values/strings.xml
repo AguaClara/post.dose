@@ -1,11 +1,10 @@
 <resources>
-    <string name="app_name" translatable="false">POST dose</string>
+    <string name="app_name">POST dose</string>
     <string name="from_collect_intent" translatable="false">org.aguaclara.post.collect.activities.COLLECT</string>
     <string name="eval_regression_intent" translatable="false">org.post.aguaclara.postdose.COLLECT</string>
     <string name="button">Update saved model</string>
     <string name="default_text">Click the \"Update saved model\" button.</string>
     <string name="no_network_connection">No network connection available.</string>
-    <string name="success">Success </string>
     <string name="waiting_for_results">Waiting...</string>
 
 </resources>
