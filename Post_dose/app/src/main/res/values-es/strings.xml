@@ -3,4 +3,7 @@
     <string name="app_name">POST dose</string>
     <string name="button">Actualiza el modelo guardado</string>
     <string name="default_text">Seleccione en el botón \"Actualize el modelo guardado\".</string>
+
+    <string name="no_network_connection">No hay conexión de red disponible.</string>
+    <string name="waiting_for_results">Esperando...</string>
 </resources>
